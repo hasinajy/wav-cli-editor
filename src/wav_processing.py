@@ -5,25 +5,26 @@ WAV Processing - Core audio processing functions
 import struct
 from sample_utils import get_sample_format_info
 
-
 def _apply_gain(sample_value, gain, min_value, max_value):
     """Apply gain to a sample and clip to bounds."""
+    
     sample_value = int(sample_value * gain)
     return max(min_value, min(max_value, sample_value))
 
-
 def _apply_anti_distortion(sample_value, threshold, max_value):
     """Apply anti-distortion to a sample using soft clipping."""
+    
     abs_sample = abs(sample_value)
     thresh_val = max_value * threshold
+    
     if abs_sample > thresh_val:
         sign = 1 if sample_value > 0 else -1
         excess = abs_sample - thresh_val
         clipped = thresh_val + (excess - (excess**3) / (3 * thresh_val**2))
         sample_value = int(sign * min(max_value, max(thresh_val, clipped)))
         return max(-max_value - 1, min(max_value, sample_value))
+    
     return sample_value
-
 
 def process_standard_samples(wav_data, bits_per_sample, gain=None, threshold=None):
     """
@@ -41,6 +42,7 @@ def process_standard_samples(wav_data, bits_per_sample, gain=None, threshold=Non
     Raises:
         ValueError: If both gain and threshold are provided or neither
     """
+    
     if (gain is None and threshold is None) or (gain is not None and threshold is not None):
         raise ValueError("Exactly one of gain or threshold must be provided")
     
@@ -91,6 +93,7 @@ def process_24bit_samples(wav_data, gain=None, threshold=None):
         b3 = wav_data[byte_pos + 2]
         
         sample_value = b1 | (b2 << 8) | (b3 << 16)
+        
         if sample_value & 0x800000:
             sample_value = sample_value - 0x1000000
         

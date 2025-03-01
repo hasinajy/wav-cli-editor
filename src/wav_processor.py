@@ -18,6 +18,7 @@ class WAVProcessor:
         Args:
             verbose (bool): Whether to print verbose output
         """
+        
         self.verbose = verbose
         self.wav_data = None
         self.sample_rate = None
@@ -26,6 +27,7 @@ class WAVProcessor:
     
     def _print_verbose(self, message):
         """Print a message if verbose mode is enabled"""
+        
         if self.verbose:
             print(message)
     
@@ -36,6 +38,7 @@ class WAVProcessor:
         Args:
             file_path (str): Path to the WAV file
         """
+        
         self.sample_rate, self.num_channels, self.bits_per_sample, self.wav_data = read_wav(file_path, self.verbose)
     
     def amplify(self, gain):
@@ -48,8 +51,10 @@ class WAVProcessor:
         Raises:
             ValueError: If gain is negative or no WAV data loaded
         """
+        
         if gain < 0:
             raise ValueError("Gain factor cannot be negative")
+        
         if self.wav_data is None:
             raise ValueError("No WAV data loaded. Call read_wav first.")
         
@@ -72,8 +77,10 @@ class WAVProcessor:
         Raises:
             ValueError: If threshold is not between 0.0 and 1.0 or no WAV data loaded
         """
+        
         if not 0.0 <= threshold <= 1.0:
             raise ValueError("Threshold must be between 0.0 and 1.0")
+        
         if self.wav_data is None:
             raise ValueError("No WAV data loaded. Call read_wav first.")
         
@@ -93,4 +100,5 @@ class WAVProcessor:
         Args:
             output_path (str): Path to write the WAV file
         """
+       
         return write_wav(output_path, self.sample_rate, self.num_channels, self.bits_per_sample, self.wav_data, self.verbose)

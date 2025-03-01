@@ -15,6 +15,7 @@ def get_sample_format_info(bits_per_sample):
     Raises:
         ValueError: If bits per sample is unsupported
     """
+    
     if bits_per_sample == 8:
         # 8-bit samples are unsigned
         return 'B', 255, 128  # unsigned char, max value, zero value

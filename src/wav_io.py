@@ -18,6 +18,7 @@ def read_wav(file_path, verbose=False):
     Raises:
         ValueError: If the file is not a valid WAV file
     """
+    
     def _print_verbose(message):
         if verbose:
             print(message)
@@ -77,7 +78,6 @@ def read_wav(file_path, verbose=False):
         
         return sample_rate, num_channels, bits_per_sample, wav_data
 
-
 def write_wav(output_path, sample_rate, num_channels, bits_per_sample, wav_data, verbose=False):
     """
     Write audio data to a new WAV file
@@ -96,6 +96,7 @@ def write_wav(output_path, sample_rate, num_channels, bits_per_sample, wav_data,
     Raises:
         ValueError: If no WAV data is provided
     """
+    
     def _print_verbose(message):
         if verbose:
             print(message)
