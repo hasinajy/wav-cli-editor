@@ -21,6 +21,7 @@ def validate_file_path(path, should_exist=True):
     Raises:
         argparse.ArgumentTypeError: If the path is invalid
     """
+    
     if should_exist and not os.path.isfile(path):
         raise argparse.ArgumentTypeError(f"The file '{path}' does not exist")
     
@@ -33,26 +34,34 @@ def validate_file_path(path, should_exist=True):
 
 def validate_input_file(path):
     """Validates that the input file exists and has a .wav extension"""
+    
     path = validate_file_path(path, should_exist=True)
+    
     if not path.lower().endswith('.wav'):
         raise argparse.ArgumentTypeError("Input file must have a .wav extension")
+    
     return path
 
 def validate_output_file(path):
     """Validates that the output path is valid and has a .wav extension"""
+    
     path = validate_file_path(path, should_exist=False)
+    
     if not path.lower().endswith('.wav'):
         raise argparse.ArgumentTypeError("Output file must have a .wav extension")
+    
     return path
 
 def process_audio(args):
     """Process the audio based on the specified action"""
+    
     processor = WAVProcessor(verbose=args.verbose)
     
     # Read the input WAV file
     processor.read_wav(args.path)
     
     # Process based on action
+    
     if args.action == "amplify":
         processor.amplify(args.gain)
     elif args.action == "anti-distortion":
@@ -64,6 +73,7 @@ def process_audio(args):
 
 def main():
     """Main function for the WAV editor CLI"""
+    
     parser = argparse.ArgumentParser(
         description="WAV Editor - A command-line tool for audio processing",
         formatter_class=argparse.RawDescriptionHelpFormatter,
