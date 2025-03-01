@@ -5,6 +5,7 @@ WAV Editor - A command-line tool for audio processing
 import argparse
 import os
 import sys
+from wav_processor import WAVProcessor
 
 def validate_file_path(path, should_exist=True):
     """
@@ -24,9 +25,7 @@ def validate_file_path(path, should_exist=True):
         raise argparse.ArgumentTypeError(f"The file '{path}' does not exist")
     
     if not should_exist:
-        # Check if the directory exists for output files
         directory = os.path.dirname(path)
-        
         if directory and not os.path.exists(directory):
             raise argparse.ArgumentTypeError(f"The directory '{directory}' does not exist")
     
@@ -35,20 +34,31 @@ def validate_file_path(path, should_exist=True):
 def validate_input_file(path):
     """Validates that the input file exists and has a .wav extension"""
     path = validate_file_path(path, should_exist=True)
-    
     if not path.lower().endswith('.wav'):
         raise argparse.ArgumentTypeError("Input file must have a .wav extension")
-    
     return path
 
 def validate_output_file(path):
     """Validates that the output path is valid and has a .wav extension"""
     path = validate_file_path(path, should_exist=False)
-    
     if not path.lower().endswith('.wav'):
         raise argparse.ArgumentTypeError("Output file must have a .wav extension")
-    
     return path
+
+def process_audio(args):
+    """Process the audio based on the specified action"""
+    processor = WAVProcessor(verbose=args.verbose)
+    
+    # Read the input WAV file
+    processor.read_wav(args.path)
+    
+    # Process based on action
+    if args.action == "amplify":
+        processor.amplify(args.gain)
+    # Add other actions (anti-distortion, noise-removal) here when implemented
+    
+    # Write the processed audio
+    processor.write_wav(args.output)
 
 def main():
     """Main function for the WAV editor CLI"""
@@ -103,10 +113,6 @@ Examples:
     
     args = parser.parse_args()
     
-    # At this point, we would call the appropriate processing function
-    # based on the action specified by the user, but as requested,
-    # we're not implementing those yet.
-    
     print(f"Action: {args.action}")
     print(f"Input file: {args.path}")
     print(f"Output file: {args.output}")
@@ -121,8 +127,8 @@ Examples:
         if args.profile:
             print(f"Noise profile: {args.profile}")
     
-    # Here you would call the appropriate processing function
-    # process_audio(args)
+    # Process the audio
+    process_audio(args)
     
     print("Processing complete!")
 
