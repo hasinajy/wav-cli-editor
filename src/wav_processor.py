@@ -256,6 +256,138 @@ class WAVProcessor:
         
         self._print_verbose("Amplification complete")
 
+    def _process_standard_samples_antidist(self, threshold):
+        """
+        Process 8, 16, or 32-bit samples with anti-distortion.
+        
+        Args:
+            threshold (float): Normalized threshold (0.0-1.0) for soft clipping
+            
+        Returns:
+            bytes: Processed audio data
+        """
+        sample_format, max_value, zero_value = self._get_sample_format_info()
+        sample_size = self.bits_per_sample // 8
+        sample_count = len(self.wav_data) // sample_size
+        
+        # Unpack all samples
+        format_str = '<' + sample_format * sample_count
+        samples = list(struct.unpack(format_str, self.wav_data))
+        
+        # Apply anti-distortion
+        thresh_val = max_value * threshold  # Convert threshold to sample value
+        min_value = -max_value - 1 if zero_value == 0 else -zero_value  # e.g., -32768 for 16-bit
+        
+        for i in range(sample_count):
+            # Convert to signed value if needed
+            if self.bits_per_sample == 8:
+                sample_value = samples[i] - zero_value
+            else:
+                sample_value = samples[i]
+            
+            # Apply soft clipping if sample exceeds threshold
+            abs_sample = abs(sample_value)
+            if abs_sample > thresh_val:
+                # Soft clipping formula: y = x - (x^3)/(3*thresh^2) for |x| > thresh
+                sign = 1 if sample_value > 0 else -1
+                excess = abs_sample - thresh_val
+                clipped = thresh_val + (excess - (excess**3) / (3 * thresh_val**2))
+                sample_value = int(sign * min(max_value, max(thresh_val, clipped)))
+                # Final bounds check to prevent struct.pack errors
+                sample_value = max(min_value, min(max_value, sample_value))
+            
+            # Convert back to unsigned for 8-bit
+            if self.bits_per_sample == 8:
+                samples[i] = sample_value + zero_value
+            else:
+                samples[i] = sample_value
+        
+        # Pack the modified samples back into bytes
+        return struct.pack(format_str, *samples)
+
+    def _process_24bit_samples_antidist(self, threshold):
+        """
+        Process 24-bit samples with anti-distortion.
+        
+        Args:
+            threshold (float): Normalized threshold (0.0-1.0) for soft clipping
+            
+        Returns:
+            bytes: Processed audio data
+        """
+        _, max_value, _ = self._get_sample_format_info()
+        sample_size = 3
+        sample_count = len(self.wav_data) // sample_size
+        new_data = bytearray(len(self.wav_data))
+        
+        thresh_val = max_value * threshold  # Convert threshold to sample value
+        
+        for i in range(sample_count):
+            byte_pos = i * sample_size
+            b1 = self.wav_data[byte_pos]
+            b2 = self.wav_data[byte_pos + 1]
+            b3 = self.wav_data[byte_pos + 2]
+            
+            # Convert to signed 24-bit integer
+            sample_value = b1 | (b2 << 8) | (b3 << 16)
+            if sample_value & 0x800000:
+                sample_value = sample_value - 0x1000000
+            
+            # Apply soft clipping if sample exceeds threshold
+            abs_sample = abs(sample_value)
+            if abs_sample > thresh_val:
+                sign = 1 if sample_value > 0 else -1
+                excess = abs_sample - thresh_val
+                clipped = thresh_val + (excess - (excess**3) / (3 * thresh_val**2))
+                sample_value = int(sign * min(max_value, clipped))
+            
+            # Convert back to 3 bytes
+            if sample_value < 0:
+                sample_value = sample_value + 0x1000000
+            new_data[byte_pos] = sample_value & 0xFF
+            new_data[byte_pos + 1] = (sample_value >> 8) & 0xFF
+            new_data[byte_pos + 2] = (sample_value >> 16) & 0xFF
+        
+        return bytes(new_data)
+
+    def amplify(self, gain):
+        # ... (unchanged from original)
+        if gain < 0:
+            raise ValueError("Gain factor cannot be negative")
+        if self.wav_data is None:
+            raise ValueError("No WAV data loaded. Call read_wav first.")
+        self._print_verbose(f"Amplifying audio with gain factor: {gain}")
+        if self.bits_per_sample == 24:
+            self.wav_data = self._process_24bit_samples(gain)
+        else:
+            self.wav_data = self._process_standard_samples(gain)
+        self._print_verbose("Amplification complete")
+
+    def anti_distortion(self, threshold):
+        """
+        Apply anti-distortion to the audio by soft clipping above a threshold
+        
+        Args:
+            threshold (float): Normalized threshold (0.0-1.0) for clipping
+            
+        Raises:
+            ValueError: If threshold is not between 0.0 and 1.0 or no WAV data loaded
+        """
+        if not 0.0 <= threshold <= 1.0:
+            raise ValueError("Threshold must be between 0.0 and 1.0")
+        if self.wav_data is None:
+            raise ValueError("No WAV data loaded. Call read_wav first.")
+        
+        self._print_verbose(f"Applying anti-distortion with threshold: {threshold}")
+        
+        # Process samples based on bit depth
+        if self.bits_per_sample == 24:
+            self.wav_data = self._process_24bit_samples_antidist(threshold)
+        else:
+            self.wav_data = self._process_standard_samples_antidist(threshold)
+        
+        self._print_verbose("Anti-distortion complete")
+
     def write_wav(self, output_path):
         """
         Write the processed audio data to a new WAV file
