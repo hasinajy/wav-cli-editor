@@ -5,11 +5,13 @@ WAV Processing - Core audio processing functions
 import struct
 from sample_utils import get_sample_format_info
 
+
 def _apply_gain(sample_value, gain, min_value, max_value):
     """Apply gain to a sample and clip to bounds."""
     
     sample_value = int(sample_value * gain)
     return max(min_value, min(max_value, sample_value))
+
 
 def _apply_anti_distortion(sample_value, threshold, max_value):
     """Apply anti-distortion to a sample using soft clipping."""
@@ -25,6 +27,7 @@ def _apply_anti_distortion(sample_value, threshold, max_value):
         return max(-max_value - 1, min(max_value, sample_value))
     
     return sample_value
+
 
 def process_standard_samples(wav_data, bits_per_sample, gain=None, threshold=None):
     """
@@ -67,6 +70,7 @@ def process_standard_samples(wav_data, bits_per_sample, gain=None, threshold=Non
         samples[i] = sample_value + zero_value if is_8bit else sample_value
     
     return struct.pack(format_str, *samples)
+
 
 def process_24bit_samples(wav_data, gain=None, threshold=None):
     """

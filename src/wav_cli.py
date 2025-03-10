@@ -7,6 +7,7 @@ import os
 import sys
 from wav_processor import WAVProcessor
 
+
 def validate_file_path(path, should_exist=True):
     """
     Validates if a file path exists or can be created.
@@ -32,6 +33,7 @@ def validate_file_path(path, should_exist=True):
     
     return path
 
+
 def validate_input_file(path):
     """Validates that the input file exists and has a .wav extension"""
     
@@ -42,6 +44,7 @@ def validate_input_file(path):
     
     return path
 
+
 def validate_output_file(path):
     """Validates that the output path is valid and has a .wav extension"""
     
@@ -51,6 +54,7 @@ def validate_output_file(path):
         raise argparse.ArgumentTypeError("Output file must have a .wav extension")
     
     return path
+
 
 def process_audio(args):
     """Process the audio based on the specified action"""
@@ -70,6 +74,7 @@ def process_audio(args):
     
     # Write the processed audio
     processor.write_wav(args.output)
+
 
 def main():
     """Main function for the WAV editor CLI"""
@@ -143,6 +148,7 @@ Examples:
     process_audio(args)
     
     print("Processing complete!")
+
 
 if __name__ == "__main__":
     try:

@@ -2,6 +2,7 @@
 Sample Utilities - Helper functions for sample format and manipulation
 """
 
+
 def get_sample_format_info(bits_per_sample):
     """
     Get sample format information based on bits per sample.

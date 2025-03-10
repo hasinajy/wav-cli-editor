@@ -4,6 +4,7 @@ WAV I/O - Functions for reading and writing WAV files
 
 import struct
 
+
 def read_wav(file_path, verbose=False):
     """
     Read a WAV file and parse its headers and data
@@ -77,6 +78,7 @@ def read_wav(file_path, verbose=False):
             raise ValueError(f"Unsupported bits per sample: {bits_per_sample}")
         
         return sample_rate, num_channels, bits_per_sample, wav_data
+
 
 def write_wav(output_path, sample_rate, num_channels, bits_per_sample, wav_data, verbose=False):
     """

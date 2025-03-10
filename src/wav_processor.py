@@ -5,6 +5,7 @@ WAV Processor - Main class for WAV audio processing
 from wav_io import read_wav, write_wav
 from wav_processing import process_standard_samples, process_24bit_samples
 
+
 class WAVProcessor:
     """
     A class for processing WAV audio files without external libraries.
