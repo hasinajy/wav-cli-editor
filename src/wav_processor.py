@@ -3,7 +3,7 @@ WAV Processor - Main class for WAV audio processing
 """
 
 from wav_io import read_wav, write_wav
-from wav_processing import process_standard_samples, process_24bit_samples
+from wav_processing import process_standard_samples, process_24bit_samples, process_noise_removal
 
 
 class WAVProcessor:
@@ -93,6 +93,40 @@ class WAVProcessor:
             self.wav_data = process_standard_samples(self.wav_data, self.bits_per_sample, threshold=threshold)
         
         self._print_verbose("Anti-distortion complete")
+ 
+    def noise_removal(self, strength='medium', profile_path=None):
+        """
+        Remove noise from the audio using spectral subtraction
+        
+        Args:
+            strength (str): Noise reduction strength ('low', 'medium', 'high')
+            profile_path (str, optional): Path to noise profile WAV file
+            
+        Raises:
+            ValueError: If invalid strength or no WAV data loaded
+        """
+        valid_strengths = ['low', 'medium', 'high']
+        if strength not in valid_strengths:
+            raise ValueError(f"Strength must be one of {valid_strengths}")
+        
+        if self.wav_data is None:
+            raise ValueError("No WAV data loaded. Call read_wav first.")
+        
+        self._print_verbose(f"Applying noise removal with strength: {strength}")
+        
+        profile_data = None
+        if profile_path:
+            _, _, _, profile_data = read_wav(profile_path, self.verbose)
+        
+        self.wav_data = process_noise_removal(
+            self.wav_data,
+            self.bits_per_sample,
+            strength,
+            self.sample_rate,
+            profile_data
+        )
+        
+        self._print_verbose("Noise removal complete")
     
     def write_wav(self, output_path):
         """

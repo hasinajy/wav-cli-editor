@@ -65,12 +65,12 @@ def process_audio(args):
     processor.read_wav(args.path)
     
     # Process based on action
-    
     if args.action == "amplify":
         processor.amplify(args.gain)
     elif args.action == "anti-distortion":
         processor.anti_distortion(args.threshold)
-    # Noise-removal would go here when implemented
+    elif args.action == "noise-removal":
+        processor.noise_removal(args.strength, args.profile)
     
     # Write the processed audio
     processor.write_wav(args.output)
